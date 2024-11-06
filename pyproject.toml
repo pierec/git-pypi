@@ -1,0 +1,156 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "git-pypi"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "pierec", email = "pdettlaff@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+	"GitPython~=3.1.0",
+	"cattrs~=24.1.0",
+	"falcon~=4.0.0",
+	"gunicorn~=23.0.0",
+	"jinja2~=3.1.0",
+]
+
+[project.urls]
+Documentation = "https://github.com/pierec/git-pypi#readme"
+Issues = "https://github.com/pierec/git-pypi/issues"
+Source = "https://github.com/pierec/git-pypi"
+
+[project.scripts]
+git-pypi-run = "git_pypi.cli.run:main"
+git-pypi-configure = "git_pypi.cli.configure:main"
+
+[tool.hatch.version]
+path = "src/git_pypi/__about__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "pip-tools",
+  "pytest",
+  "pytest-snapshot",
+  "requests",
+]
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+  "- coverage combine",
+  "coverage report",
+]
+cov = [
+  "test-cov",
+  "cov-report",
+]
+
+[tool.hatch.envs.lint]
+dependencies = [
+  "ruff~=0.7.2",
+]
+
+[tool.hatch.envs.lint.scripts]
+check = [
+  "ruff check {args:.}",
+]
+fmt = [
+  "ruff format {args:.}",
+  "ruff check --fix {args:.}",
+]
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/git_pypi tests}"
+
+[tool.coverage.run]
+source_pkgs = ["git_pypi", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/git_pypi/__about__.py",
+]
+
+[tool.coverage.paths]
+git_pypi = ["src/git_pypi", "*/git-pypi/src/git_pypi"]
+tests = ["tests", "*/git-pypi/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 90
+
+[tool.ruff.lint]
+select = [
+  "B",
+  "C",
+  "DTZ",
+  "E",
+  "F",
+  "I",
+  "ICN",
+  "ISC",
+  "N",
+  "PIE",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "PTH",
+  "PGH",
+  "RSE",
+  "Q",
+  "RUF",
+  "S",
+  "T",
+  "TID",
+  "UP",
+  "W",
+  "YTT",
+]
+ignore = ["ISC001"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+# Tests can use magic values, assertions, relative imports, and more
+"tests/**/*" = ["PLR2004", "S101", "TID252", "S603", "S311"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["git_pypi"]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+markers = [
+    "network: marks tests as making non-local network calls (deselect with '-m \"not network\"')",
+]

@@ -1,0 +1,10 @@
+package-artifacts-dir-path = "dist"
+cached-artifacts-dir-path = "~/.git-pypi/cache/artifacts"
+build-command = ["make", "build"]
+fallback-index-url = "https://pypi.python.org/simple"
+
+[server]
+host = "127.0.0.1"
+port = 60100
+threads = 4
+timeout = 300
