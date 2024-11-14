@@ -110,7 +110,7 @@ options:
 ## Configuration
 
 By default, `git-pypi-run` will attempt to read a configuration file from
-`~/.git_pypi/config.toml`. Should the file be missing, a default configuration
+`~/.git-pypi/config.toml`. Should the file be missing, a default configuration
 shall be used. The config file location can be overridden by using `-c` flag.
 
 Sample configuration file:
