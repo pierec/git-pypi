@@ -71,7 +71,7 @@ After installation, `git-pypi` provides the following CLI scripts.
 Generates a default `git-pypi` configuration file.
 
 ```console
-$ git-pupi-configure -h
+$ git-pypi-configure -h
 
 usage: git-pypi-configure [-h] [--config CONFIG] [--force]
 
@@ -89,7 +89,7 @@ options:
 Runs the `git-pypi` server.
 
 ```console
-$ git-pupi-run -h
+$ git-pypi-run -h
 
 usage: git-pypi-run [-h] [--git-repo GIT_REPO] [--host HOST] [--port PORT] [--config CONFIG] [--clear-cache] [--debug]
 
