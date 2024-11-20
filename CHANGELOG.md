@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.2.1
+
+### Fixed
+
+* Updated the project classifiers to reflect Python version compatibility.
+
 ## v0.2.0
 
 ### Changed
