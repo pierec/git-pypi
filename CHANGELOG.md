@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.2.0
+
+### Changed
+
+* The package is now compatible with Python 3.10.
+
 ## v0.1.0
 
 The inaugural version. Hello world!
