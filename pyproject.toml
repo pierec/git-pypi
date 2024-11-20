@@ -7,7 +7,7 @@ name = "git-pypi"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = "MIT"
 keywords = []
 authors = [
@@ -27,6 +27,8 @@ dependencies = [
 	"falcon~=4.0.0",
 	"gunicorn~=23.0.0",
 	"jinja2~=3.1.0",
+	"tomli~=2.1.0",
+	"typing-extensions~=4.12.2",
 ]
 
 [project.urls]
@@ -41,24 +43,16 @@ git-pypi-configure = "git_pypi.cli.configure:main"
 [tool.hatch.version]
 path = "src/git_pypi/__about__.py"
 
-[tool.hatch.envs.default]
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.13", "3.12", "3.11", "3.10"]
+
+[tool.hatch.envs.hatch-test]
+default-args = ["tests"]
 dependencies = [
   "coverage[toml]>=6.5",
-  "pip-tools",
   "pytest",
   "pytest-snapshot",
   "requests",
-]
-[tool.hatch.envs.default.scripts]
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
-cov-report = [
-  "- coverage combine",
-  "coverage report",
-]
-cov = [
-  "test-cov",
-  "cov-report",
 ]
 
 [tool.hatch.envs.lint]
@@ -102,7 +96,7 @@ exclude_lines = [
 ]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py310"
 line-length = 90
 
 [tool.ruff.lint]

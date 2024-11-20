@@ -8,6 +8,8 @@ from tempfile import TemporaryDirectory
 from threading import RLock
 from weakref import WeakValueDictionary
 
+import typing_extensions as tt
+
 from .config import DEFAULT_CONFIG, Config
 from .exc import BuilderError
 from .git import GitRepository
@@ -51,7 +53,7 @@ class PackageBuilder:
         git_repo: GitRepository,
         config: Config = DEFAULT_CONFIG,
         package_cache: PackageCache | None = None,
-    ) -> t.Self:
+    ) -> tt.Self:
         return cls(
             git_repo=git_repo,
             package_cache=package_cache or LocalFSPackageCache.from_config(config),
@@ -133,7 +135,7 @@ class LocalFSPackageCache(PackageCache):
         self._dir_path = dir_path
 
     @classmethod
-    def from_config(cls, config: Config = DEFAULT_CONFIG) -> t.Self:
+    def from_config(cls, config: Config = DEFAULT_CONFIG) -> tt.Self:
         return cls(dir_path=config.cached_artifacts_dir_path)
 
     def cache(self, package: GitPackageInfo, artifact_file_path: Path) -> Path:

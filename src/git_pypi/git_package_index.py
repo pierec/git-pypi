@@ -1,6 +1,8 @@
 import typing as t
 from pathlib import Path
 
+import typing_extensions as tt
+
 from .builder import PackageBuilder
 from .config import DEFAULT_CONFIG, Config
 from .exc import PackageNotFoundError
@@ -23,7 +25,7 @@ class GitPackageIndex:
     def from_config(
         cls,
         config: Config = DEFAULT_CONFIG,
-    ) -> t.Self:
+    ) -> tt.Self:
         git_repo = GitRepository.from_config(config=config)
         builder = PackageBuilder.from_config(git_repo=git_repo, config=config)
         return cls(builder, git_repo)

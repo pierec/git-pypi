@@ -1,9 +1,10 @@
-import tomllib
 import typing as t
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import cattrs
+import tomli
+import typing_extensions as tt
 
 DEFAULT_CONFIG_PATH = Path("~/.git-pypi/config.toml").expanduser()
 _CONVERTER = cattrs.Converter(forbid_extra_keys=True)
@@ -38,13 +39,13 @@ class Config:
             self.fallback_index_url = self.fallback_index_url.rstrip("/")
 
     @classmethod
-    def default(cls) -> t.Self:
+    def default(cls) -> tt.Self:
         return cls()
 
     @classmethod
-    def from_file(cls, file_path: Path) -> t.Self:
+    def from_file(cls, file_path: Path) -> tt.Self:
         with file_path.open("rb") as f:
-            data = tomllib.load(f)
+            data = tomli.load(f)
         return _CONVERTER.structure(
             {k.replace("-", "_"): v for k, v in data.items()},
             cls,

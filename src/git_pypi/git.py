@@ -3,6 +3,7 @@ import typing as t
 from pathlib import Path
 
 import git
+import typing_extensions as tt
 
 from .config import DEFAULT_CONFIG, Config
 from .exc import GitError
@@ -40,7 +41,7 @@ class GitRepository:
         self._repo = git.Repo(dir_path)
 
     @classmethod
-    def from_config(cls, config: Config = DEFAULT_CONFIG) -> t.Self:
+    def from_config(cls, config: Config = DEFAULT_CONFIG) -> tt.Self:
         return cls(dir_path=config.repo_dir_path)
 
     def list_packages(self) -> t.Iterator[GitPackageInfo]:
