@@ -1,6 +1,10 @@
 test:
-	hatch run test -vv
+	hatch test -vv
 .PHONY: test
+
+testall:
+	hatch test --all -vv
+.PHONY: testall
 
 test-update-snapshots:
 	hatch run test -vv --snapshot-update
