@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.3.0
+
+### Changed
+
+* Produce a nicer error message if building an artifact succeeded without
+  producing a file in an expected location.
+
 ## v0.2.1
 
 ### Fixed
