@@ -31,10 +31,10 @@ assumptions about the git repository:
 
 ```
 .
-├── package-a
+├── package-a/
 │   ├── pyproject.toml
 │   └── [...]
-├── package-b
+├── package-b/
 │   ├── pyproject.toml
 │   └── [...]
 └── [...]
@@ -59,6 +59,11 @@ items are keyed by the SHA1 of the commit, so re-tagging a commit will cause
 the package to be built again (NB: your package manager of choice is probably
 doing its own caching - something to watch out when re-tagging releases).
 Cache is persistent between server runs.
+
+If a suitable config option is set, `git-pypi` shall also serve packages
+directly from a predefined directory. This can be used to vendor-in some
+Python dependencies in the repository. In the unlikely case of a naming
+conflict between "git" and "vendored" packages, the former take precedence.
 
 ## Installation
 
@@ -123,7 +128,7 @@ Sample configuration file:
 # Directory where package artifacts can be found.
 package-artifacts-dir-path = "dist"
 
-# Cache directory localtion.
+# Cache directory location.
 cached-artifacts-dir-path = "~/.git-pypi/cache/artifacts"
 
 # The sdist package build command.
@@ -132,15 +137,50 @@ build-command = ["make", "build"]
 # Extra trees to check out for building (besides the requested package).
 # extra_checkout_paths = [".makefiles"]
 
-# Fallback index URL if a package cannot be found. Leave empty to disable the
-# additional lookup.
+# Fallback index URL used if a package cannot be found. Leave empty or null to
+# disable the additional lookup.
 fallback-index-url = "https://pypi.python.org/simple"
+
+# A directory containing vendored packages, relative to the repository root.
+# Set to null to disable looking up packages in the local dir.
+local-packages-dir-path = "vendor"
 
 [server]
 host = "127.0.0.1"
 port = 60100
 threads = 4
 timeout = 300
+```
+
+## Example Repository Layout
+
+Below is an example monorepository layout that works well with `git-pypi`.
+
+```
+.
+├── package-a/
+│   ├── Makefile
+│   ├── pyproject.toml
+│   ├── src/
+│   └── [...]
+├── package-b/
+│   ├── Makefile
+│   ├── pyproject.toml
+│   ├── src/
+│   └── [...]
+├── package-c/
+│   ├── Makefile
+│   ├── pyproject.toml
+│   ├── src/
+│   └── [...]
+├── vendor/
+│   ├── vendored_dep_a-3.0.0-py3-any.whl
+│   ├── vendored_dep_b-0.1.1.tar.gz
+│   └── vendored_dep_b-0.2.0.tar.gz
+├── .config/
+│   └── git-pypi.toml
+├── Makefile
+└── [...]
 ```
 
 ## Development
