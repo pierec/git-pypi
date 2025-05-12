@@ -31,6 +31,7 @@ def git_package_index(config):
 def test_lists_projects(git_package_index):
     projects = git_package_index.list_projects()
     assert projects == [
+        "git-pypi-bad-artifact",
         "git-pypi-bar",
         "git-pypi-faulty",
         "git-pypi-foo",
@@ -115,6 +116,25 @@ def test_raises_builder_error_if_package_cannot_be_built(
 
     with pytest.raises(git_pypi.exc.BuilderError):
         git_package_index.get_package_by_file_name("git_pypi_faulty-9.1.0.tar.gz")
+
+    snapshot.assert_match(clean_logs(caplog.text), "expected_logs.txt")
+
+
+def test_raises_builder_error_if_artifact_cannot_be_found(
+    caplog,
+    git_package_index,
+    snapshot,
+):
+    caplog.set_level(logging.INFO, logger="git_pypi")
+
+    with pytest.raises(
+        git_pypi.exc.BuilderError,
+        match=(
+            r"The expected artifact file was not found at '.*/git_pypi_bad_artifact-1\.0\.0\.tar\.gz'\."
+            r" Parent directory contains: \['.*/git_pypi_bad_artifact-0\.1\.0\.tar\.gz'\]\."
+        ),
+    ):
+        git_package_index.get_package_by_file_name("git_pypi_bad_artifact-1.0.0.tar.gz")
 
     snapshot.assert_match(clean_logs(caplog.text), "expected_logs.txt")
 

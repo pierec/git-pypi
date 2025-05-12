@@ -108,6 +108,13 @@ class PackageBuilder:
             package_dir_path / self._package_artifacts_dir_path / package.sdist_file_name
         )
 
+        if not artifact_file_path.exists():
+            dir_contents = sorted(str(s) for s in artifact_file_path.parent.glob("*"))
+            raise BuilderError(
+                f"The expected artifact file was not found at '{artifact_file_path}'."
+                f" Parent directory contains: {dir_contents}.",
+            )
+
         return self._cache.cache(
             package,
             artifact_file_path,
