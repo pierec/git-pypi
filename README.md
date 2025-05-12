@@ -25,8 +25,7 @@ one can avoid specifying git package URIs explicitly.
 The packages are indexed based on git tags. The service makes the following
 assumptions about the git repository:
 
-* only serving source distributions is supported,
-* tags follow this format: `<package-name>/v<package-version>`,
+* tags adhere to the following format: `<package-name>/v<package-version>`,
 * tags are accurate w.r.t. the actual package versions they represent,
 * the repository layout is flat, e.g:
 
@@ -41,20 +40,25 @@ assumptions about the git repository:
 └── [...]
 ```
 
+Only serving source distributions is supported at this time.
+
 When a specific package (e.g. `package_a-1.2.3.tar.gz`) is requested by `pip`,
-the server will perform the following operations:
+and the artifact is not already cached, the server will perform the following
+operations:
 
 1. Check out the package directory tree (and, optionally, additional trees as
    dictated by the server config) at the given tag (e.g. `package-a/v1.2.3`) to
    a temporary build directory.
-2. Run the build command in the temporary package directory.
+2. Run the build command in the temporary build directory.
 3. Copy the package artifact to the cache.
 4. Remove the temporary build directory.
 5. Return a HTTP 200 response containing the package contents.
 
 Subsequent requests for the same package will use the cached version. Cached
 items are keyed by the SHA1 of the commit, so re-tagging a commit will cause
-the package to be built again. Cache is persistent between server runs.
+the package to be built again (NB: your package manager of choice is probably
+doing its own caching - something to watch out when re-tagging releases).
+Cache is persistent between server runs.
 
 ## Installation
 
