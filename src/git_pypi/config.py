@@ -27,10 +27,10 @@ class Config:
     repo_dir_path: Path = field(default_factory=Path.cwd)
     package_artifacts_dir_path: Path = Path("dist")
     cached_artifacts_dir_path: Path = Path("~/.git-pypi/cache/artifacts")
-    local_packages_dir_path: Path = Path("vendor")
+    local_packages_dir_path: Path | None = Path("vendor")
     build_command: tuple[str, ...] = ("make", "build")
     extra_checkout_paths: tuple[Path, ...] = ()
-    fallback_index_url: str = "https://pypi.python.org/simple"
+    fallback_index_url: str | None = "https://pypi.python.org/simple"
     server: ServerConfig = field(default_factory=ServerConfig)
 
     def __post_init__(self):

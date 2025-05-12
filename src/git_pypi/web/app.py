@@ -7,12 +7,7 @@ import jinja2
 
 from git_pypi.config import DEFAULT_CONFIG, Config
 from git_pypi.exc import PackageNotFoundError
-from git_pypi.package_index import (
-    CombinedPackageIndex,
-    GitPackageIndex,
-    LocalFSPackageIndex,
-    PackageIndex,
-)
+from git_pypi.package_index import PackageIndex, create_package_index
 
 logger = logging.getLogger(__name__)
 
@@ -104,12 +99,8 @@ class HealthResource:
 
 
 def create_app(config: Config = DEFAULT_CONFIG) -> falcon.App:
-    package_index = CombinedPackageIndex(
-        [
-            GitPackageIndex.from_config(config),
-            LocalFSPackageIndex.from_config(config),
-        ]
-    )
+    package_index = create_package_index(config)
+
     app = falcon.App()
     app.req_options.strip_url_path_trailing_slash = True
 

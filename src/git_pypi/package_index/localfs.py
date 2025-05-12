@@ -20,6 +20,12 @@ class LocalFSPackageIndex(PackageIndex):
         cls,
         config: Config = DEFAULT_CONFIG,
     ) -> tt.Self:
+        if not config.local_packages_dir_path:
+            raise ValueError(
+                f"local_packages_dir_path: invalid value"
+                f" ({config.local_packages_dir_path!r})"
+            )
+
         return cls(config.local_packages_dir_path)
 
     def list_projects(self) -> list[ProjectName]:
