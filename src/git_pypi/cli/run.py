@@ -5,6 +5,7 @@ from pathlib import Path
 
 import cattrs
 
+import git_pypi.__about__
 from git_pypi.builder import LocalFSPackageCache
 from git_pypi.config import Config
 from git_pypi.web.app import create_app
@@ -21,6 +22,7 @@ class Args:
     clear_cache: bool
     host: str | None
     port: int | None
+    version: bool
 
 
 def parse_args(argv: list[str] | None = None) -> Args:
@@ -58,6 +60,11 @@ def parse_args(argv: list[str] | None = None) -> Args:
         action="store_true",
         help="Enable debug logging.",
     )
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        help="Print version and exit.",
+    )
     args = parser.parse_args(argv)
     return cattrs.structure(vars(args), Args)
 
@@ -88,8 +95,13 @@ def setup_logging(args: Args):
     )
 
 
-def main(argv: list[str] | None = None):
+def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
+
+    if args.version:
+        print(git_pypi.__about__.__version__)  # noqa: T201
+        return
+
     config = read_config(args)
     setup_logging(args)
 
