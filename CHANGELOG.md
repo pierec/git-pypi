@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.0
+
+### Added
+
+* `git-pypi-run` now supports a `--version` flag. If set, the script shall
+  print `git-pypi` version and exit.
+
 ## v0.4.0
 
 ### Added
