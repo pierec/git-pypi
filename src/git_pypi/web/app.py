@@ -7,7 +7,7 @@ import jinja2
 
 from git_pypi.config import DEFAULT_CONFIG, Config
 from git_pypi.exc import PackageNotFoundError
-from git_pypi.git_package_index import GitPackageIndex
+from git_pypi.package_index import PackageIndex, create_package_index
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +17,10 @@ URI: t.TypeAlias = str
 class ProjectResource:
     def __init__(
         self,
-        git_package_index: GitPackageIndex,
+        package_index: PackageIndex,
         fallback_index_url: URI | None = None,
     ) -> None:
-        self._git_package_index = git_package_index
+        self._package_index = package_index
         self._fallback_index_url = fallback_index_url
 
         jinja_env = jinja2.Environment(
@@ -49,7 +49,7 @@ class ProjectResource:
         response: falcon.Response,
         project_name: str,
     ) -> None:
-        package_file_names = self._git_package_index.list_packages(project_name)
+        package_file_names = self._package_index.list_packages(project_name)
 
         if not package_file_names:
             if self._fallback_index_url:
@@ -72,8 +72,8 @@ class ProjectResource:
 
 
 class PackageResource:
-    def __init__(self, git_package_index: GitPackageIndex) -> None:
-        self._git_package_index = git_package_index
+    def __init__(self, package_index: PackageIndex) -> None:
+        self._package_index = package_index
 
     def on_get(
         self,
@@ -82,7 +82,7 @@ class PackageResource:
         file_name: str,
     ) -> None:
         try:
-            file_path = self._git_package_index.get_package_by_file_name(file_name)
+            file_path = self._package_index.get_package_by_file_name(file_name)
         except PackageNotFoundError as e:
             raise falcon.HTTPNotFound from e
 
@@ -99,20 +99,21 @@ class HealthResource:
 
 
 def create_app(config: Config = DEFAULT_CONFIG) -> falcon.App:
+    package_index = create_package_index(config)
+
     app = falcon.App()
     app.req_options.strip_url_path_trailing_slash = True
 
-    git_package_index = GitPackageIndex.from_config(config)
     app.add_route(
         "/simple/{project_name}",
         ProjectResource(
-            git_package_index,
+            package_index,
             fallback_index_url=config.fallback_index_url,
         ),
     )
     app.add_route(
         "/packages/{file_name}",
-        PackageResource(git_package_index),
+        PackageResource(package_index),
     )
     app.add_route(
         "/health",

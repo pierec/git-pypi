@@ -10,6 +10,11 @@ REPO_BUNDLE_PATH = TEST_DIR / "test-repo.bundle"
 
 
 @pytest.fixture(scope="session")
+def test_dir_path():
+    return TEST_DIR
+
+
+@pytest.fixture(scope="session")
 def git_repo_dir_path(tmp_path_factory):
     tmp_path = tmp_path_factory.mktemp("test-repo")
     repo_dir_path = tmp_path / "repo"
@@ -18,6 +23,11 @@ def git_repo_dir_path(tmp_path_factory):
         check=True,
     )
     return repo_dir_path
+
+
+@pytest.fixture
+def vendor_dir_path(test_dir_path):
+    return test_dir_path / "vendor"
 
 
 @pytest.fixture

@@ -11,9 +11,10 @@ from git_pypi.cli.run import main
 
 
 @pytest.fixture
-def config(tmp_path, random_port):
+def config(tmp_path, vendor_dir_path, random_port):
     return {
         "cache_dir_path": tmp_path / "cache",
+        "local_packages_dir_path": vendor_dir_path,
         "host": "127.0.0.1",
         "port": random_port,
         "fallback_index_url": "",
@@ -25,6 +26,7 @@ def config_file_path(config, tmp_path):
     config = """
     package-artifacts-dir-path = "dist"
     cached-artifacts-dir-path = "{cache_dir_path}"
+    local-packages-dir-path = "{local_packages_dir_path}"
     build-command = ["make", "build"]
     fallback-index-url = "{fallback_index_url}"
 
@@ -51,8 +53,8 @@ def run_main(config, config_file_path, git_repo_dir_path):
             timeout=5,
         ) -> None:
             url = f"http://{host}:{port}/health"
-            timeout_at = time.monotonic()
-            while time.monotonic() > timeout_at or not process.is_alive():
+            timeout_at = time.monotonic() + timeout
+            while time.monotonic() < timeout_at or not process.is_alive():
                 try:
                     r = requests.get(url, timeout=0.5)
                 except requests.ConnectionError:
@@ -117,14 +119,23 @@ class TestWithFallbackIndexURL:
         run_pip_install("--no-cache-dir", "--index-url", index_url, "git-pypi-foobar")
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "git-pypi-bar",
+        "vendored-a",
+    ],
+)
 def test_returns_200_if_project_found(
+    name,
+    *,
     config,
     run_main,
     snapshot,
 ):
     run_main()
 
-    url = "http://{host}:{port}/simple/git-pypi-bar".format(**config)
+    url = "http://{host}:{port}/simple/{name}".format(**config, name=name)
     r = requests.get(url, timeout=5)
 
     assert r.status_code == 200, r.text
