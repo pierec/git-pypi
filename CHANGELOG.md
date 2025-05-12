@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.4.0
+
+### Added
+
+* Added support for serving packages from a predefined local directory. This
+  feature is intended for vendoring in packages in the repository. The feature
+  is off by default. Set `local-packages-dir-path` (default: ` null`) config
+  option to enable.
+
 ## v0.3.0
 
 ### Changed
