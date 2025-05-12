@@ -1,3 +1,10 @@
 from . import exc
 from .config import DEFAULT_CONFIG, Config
-from .git_package_index import GitPackageIndex
+from .package_index import (
+    CombinedPackageIndex,
+    FileName,
+    GitPackageIndex,
+    LocalFSPackageIndex,
+    PackageIndex,
+    ProjectName,
+)

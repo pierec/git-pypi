@@ -27,6 +27,7 @@ class Config:
     repo_dir_path: Path = field(default_factory=Path.cwd)
     package_artifacts_dir_path: Path = Path("dist")
     cached_artifacts_dir_path: Path = Path("~/.git-pypi/cache/artifacts")
+    local_packages_dir_path: Path = Path("vendor")
     build_command: tuple[str, ...] = ("make", "build")
     extra_checkout_paths: tuple[Path, ...] = ()
     fallback_index_url: str = "https://pypi.python.org/simple"

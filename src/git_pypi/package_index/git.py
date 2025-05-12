@@ -1,18 +1,16 @@
-import typing as t
 from pathlib import Path
 
 import typing_extensions as tt
 
-from .builder import PackageBuilder
-from .config import DEFAULT_CONFIG, Config
-from .exc import PackageNotFoundError
-from .git import GitRepository
+from git_pypi.builder import PackageBuilder
+from git_pypi.config import DEFAULT_CONFIG, Config
+from git_pypi.exc import PackageNotFoundError
+from git_pypi.git import GitRepository
 
-ProjectName: t.TypeAlias = str
-FileName: t.TypeAlias = str
+from .base import FileName, PackageIndex, ProjectName
 
 
-class GitPackageIndex:
+class GitPackageIndex(PackageIndex):
     def __init__(
         self,
         builder: PackageBuilder,
