@@ -1,6 +1,9 @@
 class GitPackageIndexError(Exception): ...
 
 
+class ConfigError(GitPackageIndexError): ...
+
+
 class BuilderError(GitPackageIndexError): ...
 
 

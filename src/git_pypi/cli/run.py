@@ -7,7 +7,7 @@ import cattrs
 
 import git_pypi.__about__
 from git_pypi.builder import LocalFSPackageCache
-from git_pypi.config import Config
+from git_pypi.config import DEFAULT_CONFIG_PATH, Config
 from git_pypi.web.app import create_app
 from git_pypi.web.server import Server
 
@@ -16,8 +16,7 @@ logger = logging.getLogger("git_pypi")
 
 @dataclass
 class Args:
-    git_repo: Path | None
-    config: Path | None
+    config: Path
     debug: bool
     clear_cache: bool
     host: str | None
@@ -27,12 +26,6 @@ class Args:
 
 def parse_args(argv: list[str] | None = None) -> Args:
     parser = argparse.ArgumentParser(description="Run the git-pypi server.")
-    parser.add_argument(
-        "--git-repo",
-        "-r",
-        type=Path,
-        help="Git repository path.",
-    )
     parser.add_argument(
         "--host",
         "-H",
@@ -48,6 +41,7 @@ def parse_args(argv: list[str] | None = None) -> Args:
         "--config",
         "-c",
         type=Path,
+        default=DEFAULT_CONFIG_PATH,
         help="Config file path.",
     )
     parser.add_argument(
@@ -70,19 +64,13 @@ def parse_args(argv: list[str] | None = None) -> Args:
 
 
 def read_config(args: Args):
-    if args.config:
-        config = Config.from_file(args.config)
-    else:
-        config = Config.default()
+    config = Config.from_file(args.config)
 
     if args.host:
         config.server.host = args.host
 
     if args.port:
         config.server.port = args.port
-
-    if args.git_repo:
-        config.repo_dir_path = args.git_repo
 
     return config
 
@@ -118,7 +106,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.clear_cache:
         logger.info("Clearing cache...")
-        LocalFSPackageCache.from_config(config).clear()
+        LocalFSPackageCache(config.cached_artifacts_dir_path).clear()
 
     logger.info(
         "Running server... use http://%s/simple as the index URL.",

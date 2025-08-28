@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 
 TEST_DIR = Path(__file__).parent
-REPO_BUNDLE_PATH = TEST_DIR / "test-repo.bundle"
+REPO_BUNDLE_A_PATH = TEST_DIR / "test-repo-a.bundle"
+REPO_BUNDLE_B_PATH = TEST_DIR / "test-repo-b.bundle"
 
 
 @pytest.fixture(scope="session")
@@ -14,15 +15,54 @@ def test_dir_path():
     return TEST_DIR
 
 
-@pytest.fixture(scope="session")
-def git_repo_dir_path(tmp_path_factory):
-    tmp_path = tmp_path_factory.mktemp("test-repo")
-    repo_dir_path = tmp_path / "repo"
+@pytest.fixture
+def cache_dir_path(tmp_path):
+    return tmp_path / "cache"
+
+
+@pytest.fixture
+def git_repo_a_dir_path(tmp_path):
+    repo_dir_path = tmp_path / "repo-a"
     subprocess.run(
-        ["git", "clone", str(REPO_BUNDLE_PATH), repo_dir_path],  # noqa: S607
+        ["git", "clone", str(REPO_BUNDLE_A_PATH), repo_dir_path],  # noqa: S607
         check=True,
     )
     return repo_dir_path
+
+
+@pytest.fixture
+def git_repo_dir_path(git_repo_a_dir_path):
+    return git_repo_a_dir_path
+
+
+@pytest.fixture
+def git_remote_repo_a_uri():
+    return str(REPO_BUNDLE_A_PATH)
+
+
+@pytest.fixture
+def git_remote_repo_a_dir_path(tmp_path):
+    return tmp_path / "remote-repo-a"
+
+
+@pytest.fixture
+def git_remote_repo_b_uri():
+    return str(REPO_BUNDLE_B_PATH)
+
+
+@pytest.fixture
+def git_remote_repo_uri(git_remote_repo_b_uri):
+    return git_remote_repo_b_uri
+
+
+@pytest.fixture
+def git_remote_repo_b_dir_path(tmp_path_factory):
+    return tmp_path_factory.mktemp("remote-repo-b")
+
+
+@pytest.fixture
+def git_remote_repo_dir_path(git_remote_repo_b_dir_path):
+    return git_remote_repo_b_dir_path
 
 
 @pytest.fixture

@@ -8,9 +8,6 @@ from tempfile import TemporaryDirectory
 from threading import RLock
 from weakref import WeakValueDictionary
 
-import typing_extensions as tt
-
-from .config import DEFAULT_CONFIG, Config
 from .exc import BuilderError
 from .git import GitRepository
 from .types import GitPackageInfo
@@ -29,39 +26,21 @@ class PackageCache(t.Protocol):
 
 
 class PackageBuilder:
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         git_repo: GitRepository,
         package_cache: PackageCache,
         build_command: t.Sequence[str],
         package_artifacts_dir_path: Path | str,
-        cached_artifacts_dir_path: Path | str,
         extra_checkout_paths: t.Sequence[Path | str] | None = None,
     ) -> None:
         self._build_command = list(build_command)
         self._package_artifacts_dir_path = Path(package_artifacts_dir_path)
-        self._cached_artifacts_dir_path = Path(cached_artifacts_dir_path)
         self._extra_checkout_paths = [Path(p) for p in (extra_checkout_paths or [])]
 
         self._git_repo = git_repo
         self._cache = package_cache
         self._locks = PackageBuildLocks()
-
-    @classmethod
-    def from_config(
-        cls,
-        git_repo: GitRepository,
-        config: Config = DEFAULT_CONFIG,
-        package_cache: PackageCache | None = None,
-    ) -> tt.Self:
-        return cls(
-            git_repo=git_repo,
-            package_cache=package_cache or LocalFSPackageCache.from_config(config),
-            build_command=config.build_command,
-            package_artifacts_dir_path=config.package_artifacts_dir_path,
-            cached_artifacts_dir_path=config.cached_artifacts_dir_path,
-            extra_checkout_paths=config.extra_checkout_paths,
-        )
 
     def build(
         self,
@@ -140,10 +119,6 @@ class PackageBuildLocks:
 class LocalFSPackageCache(PackageCache):
     def __init__(self, dir_path: Path):
         self._dir_path = dir_path
-
-    @classmethod
-    def from_config(cls, config: Config = DEFAULT_CONFIG) -> tt.Self:
-        return cls(dir_path=config.cached_artifacts_dir_path)
 
     def cache(self, package: GitPackageInfo, artifact_file_path: Path) -> Path:
         """Copy the artifact atomically by first copying it to a temp file and

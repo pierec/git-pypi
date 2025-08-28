@@ -1,9 +1,6 @@
 from pathlib import Path
 
-import typing_extensions as tt
-
 from git_pypi.builder import PackageBuilder
-from git_pypi.config import DEFAULT_CONFIG, Config
 from git_pypi.exc import PackageNotFoundError
 from git_pypi.git import GitRepository
 
@@ -18,15 +15,6 @@ class GitPackageIndex(PackageIndex):
     ) -> None:
         self._builder = builder
         self._git_repo = git_repo
-
-    @classmethod
-    def from_config(
-        cls,
-        config: Config = DEFAULT_CONFIG,
-    ) -> tt.Self:
-        git_repo = GitRepository.from_config(config=config)
-        builder = PackageBuilder.from_config(git_repo=git_repo, config=config)
-        return cls(builder, git_repo)
 
     def list_projects(self) -> list[ProjectName]:
         return sorted({p.project_name for p in self._git_repo.list_packages()})

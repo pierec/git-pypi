@@ -1,5 +1,5 @@
 from . import exc
-from .config import DEFAULT_CONFIG, Config
+from .config import Config
 from .package_index import (
     CombinedPackageIndex,
     FileName,
