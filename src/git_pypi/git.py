@@ -1,4 +1,6 @@
 import logging
+import threading
+import time
 import typing as t
 from pathlib import Path
 
@@ -35,9 +37,14 @@ class GitRepository:
         self,
         repo: git.Repo,
         parse_tag: TagParser = default_tag_parser,
+        fetch_fresh_period: float = 60,
     ) -> None:
         self._parse_tag = parse_tag
         self._repo = repo
+
+        self._fetch_fresh_period = fetch_fresh_period
+        self._last_fetch_ts: float = 0
+        self._fetch_lock = threading.Lock()
 
     @classmethod
     def from_local_dir(cls, dir_path: Path | str) -> tt.Self:
@@ -89,6 +96,17 @@ class GitRepository:
         for tag in tags:
             if package_info := self._parse_tag(tag):
                 yield package_info
+
+    def fetch_tags(self) -> None:
+        try:
+            remote = self._repo.remote()
+        except ValueError:
+            return
+
+        with self._fetch_lock:
+            if time.monotonic() - self._last_fetch_ts > self._fetch_fresh_period:
+                remote.fetch(tags=True)
+                self._last_fetch_ts = time.monotonic()
 
     def checkout(
         self,

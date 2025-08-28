@@ -40,3 +40,7 @@ class CombinedPackageIndex(PackageIndex):
                 continue
 
         raise PackageNotFoundError(file_name)
+
+    def refresh(self) -> None:
+        for index in self._indexes:
+            index.refresh()

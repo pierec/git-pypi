@@ -48,3 +48,5 @@ class LocalFSPackageIndex(PackageIndex):
             for path in self._dir_path.iterdir()
             if not path.name.startswith(self._ignore_prefixes)
         )
+
+    def refresh(self) -> None: ...
