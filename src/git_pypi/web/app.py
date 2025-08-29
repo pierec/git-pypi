@@ -5,7 +5,7 @@ from textwrap import dedent
 import falcon
 import jinja2
 
-from git_pypi.config import DEFAULT_CONFIG, Config
+from git_pypi.config import Config
 from git_pypi.exc import PackageNotFoundError
 from git_pypi.package_index import PackageIndex, create_package_index
 
@@ -98,7 +98,7 @@ class HealthResource:
         response.media = {}
 
 
-def create_app(config: Config = DEFAULT_CONFIG) -> falcon.App:
+def create_app(config: Config) -> falcon.App:
     package_index = create_package_index(config)
 
     app = falcon.App()

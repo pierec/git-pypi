@@ -11,24 +11,50 @@ from git_pypi.cli.run import main
 
 
 @pytest.fixture
-def config(tmp_path, vendor_dir_path, random_port):
+def config(  # noqa: PLR0913
+    cache_dir_path,
+    git_repo_dir_path,
+    git_remote_repo_uri,
+    git_remote_repo_dir_path,
+    vendor_dir_path,
+    random_port,
+):
     return {
-        "cache_dir_path": tmp_path / "cache",
+        "cache_dir_path": cache_dir_path,
         "local_packages_dir_path": vendor_dir_path,
         "host": "127.0.0.1",
         "port": random_port,
         "fallback_index_url": "",
+        "git_local_repo_dir_path": git_repo_dir_path,
+        "git_remote_repo_uri": git_remote_repo_uri,
+        "git_remote_repo_dir_path": git_remote_repo_dir_path,
     }
 
 
 @pytest.fixture
 def config_file_path(config, tmp_path):
     config = """
-    package-artifacts-dir-path = "dist"
-    cached-artifacts-dir-path = "{cache_dir_path}"
-    local-packages-dir-path = "{local_packages_dir_path}"
-    build-command = ["make", "build"]
+    version = 1
+
     fallback-index-url = "{fallback_index_url}"
+    cached-artifacts-dir-path = "{cache_dir_path}"
+
+    [repositories.git-local]
+    type = "git"
+    dir-path = "{git_local_repo_dir_path}"
+    package-artifacts-dir-path = "dist"
+    build-command = ["make", "build"]
+
+    [repositories.git-remote]
+    type = "git"
+    remote-uri = "{git_remote_repo_uri}"
+    dir-path = "{git_remote_repo_dir_path}"
+    package-artifacts-dir-path = "dist"
+    build-command = ["make", "build"]
+
+    [repositories.vendored]
+    type = "package-dir"
+    dir-path = "{local_packages_dir_path}"
 
     [server]
     host = "{host}"
@@ -43,7 +69,7 @@ def config_file_path(config, tmp_path):
 
 
 @pytest.fixture
-def run_main(config, config_file_path, git_repo_dir_path):
+def run_main(config, config_file_path):
     with ExitStack() as es:
 
         def _wait_for_it(
@@ -66,7 +92,7 @@ def run_main(config, config_file_path, git_repo_dir_path):
             assert process.is_alive(), f"process {process!r} died"
 
         def _fixture(*args):
-            args = ("-c", str(config_file_path), "-r", str(git_repo_dir_path), *args)
+            args = ("-c", str(config_file_path), *args)
             p = mp.Process(target=main, args=(args,))
             p.start()
             es.callback(lambda: p.join(5))
@@ -123,6 +149,7 @@ class TestWithFallbackIndexURL:
     "name",
     [
         "git-pypi-bar",
+        "git-pypi-deadbeef",
         "vendored-a",
     ],
 )

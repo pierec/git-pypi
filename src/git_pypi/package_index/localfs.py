@@ -2,9 +2,6 @@ import typing as t
 from collections import defaultdict
 from pathlib import Path
 
-import typing_extensions as tt
-
-from git_pypi.config import DEFAULT_CONFIG, Config
 from git_pypi.exc import PackageNotFoundError
 
 from .base import FileName, PackageIndex, ProjectName
@@ -14,19 +11,6 @@ class LocalFSPackageIndex(PackageIndex):
     def __init__(self, dir_path: Path) -> None:
         self._dir_path = dir_path
         self._ignore_prefixes = (".", "_")
-
-    @classmethod
-    def from_config(
-        cls,
-        config: Config = DEFAULT_CONFIG,
-    ) -> tt.Self:
-        if not config.local_packages_dir_path:
-            raise ValueError(
-                f"local_packages_dir_path: invalid value"
-                f" ({config.local_packages_dir_path!r})"
-            )
-
-        return cls(config.local_packages_dir_path)
 
     def list_projects(self) -> list[ProjectName]:
         return sorted(self._list_package_paths_by_project().keys())
@@ -64,3 +48,5 @@ class LocalFSPackageIndex(PackageIndex):
             for path in self._dir_path.iterdir()
             if not path.name.startswith(self._ignore_prefixes)
         )
+
+    def refresh(self) -> None: ...

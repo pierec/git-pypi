@@ -24,8 +24,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-	"GitPython~=3.1.0",
-	"cattrs~=24.1.0",
+	"cattrs~=25.1.1",
 	"falcon~=4.0.0",
 	"gunicorn~=23.0.0",
 	"jinja2~=3.1.0",

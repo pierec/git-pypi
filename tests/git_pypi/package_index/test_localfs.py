@@ -1,19 +1,32 @@
 import pytest
 
-import git_pypi
+from git_pypi.config import Config
 from git_pypi.exc import PackageNotFoundError
+from git_pypi.package_index.factory import create_package_index
+from git_pypi.package_index.localfs import LocalFSPackageIndex
 
 
 @pytest.fixture
-def config(vendor_dir_path):
-    return git_pypi.Config(
-        local_packages_dir_path=vendor_dir_path,
+def localfs_package_index(
+    cache_dir_path,
+    vendor_dir_path,
+) -> LocalFSPackageIndex:
+    config = Config.from_dict(
+        {
+            "cached-artifacts-dir-path": str(cache_dir_path),
+            "repositories": {
+                "main": {
+                    "type": "package-dir",
+                    "dir-path": str(vendor_dir_path),
+                }
+            },
+        }
     )
 
+    package_index = create_package_index(config)
+    assert isinstance(package_index, LocalFSPackageIndex)
 
-@pytest.fixture
-def localfs_package_index(config):
-    return git_pypi.LocalFSPackageIndex.from_config(config)
+    return package_index
 
 
 def test_lists_projects(localfs_package_index):

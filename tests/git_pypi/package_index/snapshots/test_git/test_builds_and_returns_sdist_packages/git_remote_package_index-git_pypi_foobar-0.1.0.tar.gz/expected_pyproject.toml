@@ -1,0 +1,11 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "git-pypi-foobar"
+version = "0.1.0"
+dependencies = [
+	"git-pypi-foo==0.1.1",
+	"git-pypi-bar==0.1.0",
+]

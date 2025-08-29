@@ -4,7 +4,10 @@ import tarfile
 
 import pytest
 
-import git_pypi
+import git_pypi.exc
+from git_pypi.config import Config
+from git_pypi.package_index.factory import create_package_index
+from git_pypi.package_index.git import GitPackageIndex
 
 
 def clean_logs(logs: str) -> str:
@@ -13,19 +16,62 @@ def clean_logs(logs: str) -> str:
     return logs
 
 
+@pytest.fixture(
+    params=[
+        "git_local_package_index",
+        "git_remote_package_index",
+    ]
+)
+def git_package_index(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture
-def config(git_repo_dir_path, tmp_path):
-    config = git_pypi.Config(
-        repo_dir_path=git_repo_dir_path,
-        cached_artifacts_dir_path=tmp_path / "cache",
-        fallback_index_url=None,
+def git_local_package_index(
+    cache_dir_path,
+    git_repo_a_dir_path,
+) -> GitPackageIndex:
+    config = Config.from_dict(
+        {
+            "cached-artifacts-dir-path": str(cache_dir_path),
+            "repositories": {
+                "main": {
+                    "type": "git",
+                    "dir-path": str(git_repo_a_dir_path),
+                }
+            },
+        }
     )
-    return config
+
+    package_index = create_package_index(config)
+    assert isinstance(package_index, GitPackageIndex)
+
+    return package_index
 
 
 @pytest.fixture
-def git_package_index(config):
-    return git_pypi.GitPackageIndex.from_config(config)
+def git_remote_package_index(
+    cache_dir_path,
+    git_remote_repo_a_uri,
+    git_remote_repo_a_dir_path,
+) -> GitPackageIndex:
+    config = Config.from_dict(
+        {
+            "cached-artifacts-dir-path": str(cache_dir_path),
+            "repositories": {
+                "main": {
+                    "type": "git",
+                    "remote-uri": git_remote_repo_a_uri,
+                    "dir-path": str(git_remote_repo_a_dir_path),
+                }
+            },
+        }
+    )
+
+    package_index = create_package_index(config)
+    assert isinstance(package_index, GitPackageIndex)
+
+    return package_index
 
 
 def test_lists_projects(git_package_index):
@@ -141,3 +187,7 @@ def test_raises_builder_error_if_artifact_cannot_be_found(
 
 @pytest.mark.skip("TODO")
 def test_packages_are_cached_based_on_git_sha1(): ...
+
+
+@pytest.mark.skip("TODO")
+def test_switches_checkout_dir_if_repo_exists_with_different_remote(): ...

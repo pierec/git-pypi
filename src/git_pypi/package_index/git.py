@@ -1,13 +1,13 @@
+import logging
 from pathlib import Path
 
-import typing_extensions as tt
-
 from git_pypi.builder import PackageBuilder
-from git_pypi.config import DEFAULT_CONFIG, Config
-from git_pypi.exc import PackageNotFoundError
+from git_pypi.exc import GitError, PackageNotFoundError
 from git_pypi.git import GitRepository
 
 from .base import FileName, PackageIndex, ProjectName
+
+logger = logging.getLogger(__name__)
 
 
 class GitPackageIndex(PackageIndex):
@@ -19,19 +19,12 @@ class GitPackageIndex(PackageIndex):
         self._builder = builder
         self._git_repo = git_repo
 
-    @classmethod
-    def from_config(
-        cls,
-        config: Config = DEFAULT_CONFIG,
-    ) -> tt.Self:
-        git_repo = GitRepository.from_config(config=config)
-        builder = PackageBuilder.from_config(git_repo=git_repo, config=config)
-        return cls(builder, git_repo)
-
     def list_projects(self) -> list[ProjectName]:
+        self.refresh()
         return sorted({p.project_name for p in self._git_repo.list_packages()})
 
     def list_packages(self, project_name: ProjectName) -> list[FileName]:
+        self.refresh()
         filtered_packages = (
             p.sdist_file_name
             for p in self._git_repo.list_packages()
@@ -50,3 +43,9 @@ class GitPackageIndex(PackageIndex):
 
         package_file_path = self._builder.build(package)
         return package_file_path
+
+    def refresh(self) -> None:
+        try:
+            self._git_repo.fetch()
+        except GitError as e:
+            logger.warning("Failed to refresh %r: %r", self._git_repo, e)

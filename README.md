@@ -15,7 +15,7 @@
 ## Overview
 
 `git-pypi` provides a `pip`-compatible package index server that serves
-packages based on the contents of a git repository. The server implements a
+packages based on the contents of git repositories. The server implements a
 subset of [Simple Repository API](https://packaging.python.org/en/latest/specifications/simple-repository-api/).
 
 It is meant to be used in a monorepo scenario, where some packages housed in
@@ -40,7 +40,8 @@ assumptions about the git repository:
 └── [...]
 ```
 
-Only serving source distributions is supported at this time.
+Only serving source distributions from a git repository is supported at this
+time.
 
 When a specific package (e.g. `package_a-1.2.3.tar.gz`) is requested by `pip`,
 and the artifact is not already cached, the server will perform the following
@@ -60,10 +61,10 @@ the package to be built again (NB: your package manager of choice is probably
 doing its own caching - something to watch out when re-tagging releases).
 Cache is persistent between server runs.
 
-If a suitable config option is set, `git-pypi` shall also serve packages
-directly from a predefined directory. This can be used to vendor-in some
-Python dependencies in the repository. In the unlikely case of a naming
-conflict between "git" and "vendored" packages, the former take precedence.
+`git-pypi` can also serve prebuild packages from a flat local directory.
+
+Multiple repositories can be configured. Package lookup happens in the order
+the repositories were defined in the config file.
 
 ## Installation
 
@@ -100,14 +101,12 @@ Runs the `git-pypi` server.
 ```console
 $ git-pypi-run -h
 
-usage: git-pypi-run [-h] [--git-repo GIT_REPO] [--host HOST] [--port PORT] [--config CONFIG] [--clear-cache] [--debug]
+usage: git-pypi-run [-h] [--host HOST] [--port PORT] [--config CONFIG] [--clear-cache] [--debug]
 
 Run the git-pypi server.
 
 options:
   -h, --help            show this help message and exit
-  --git-repo GIT_REPO, -r GIT_REPO
-                        Git repository path.
   --host HOST, -H HOST  Server host
   --port PORT, -p PORT  Server port
   --config CONFIG, -c CONFIG
@@ -125,31 +124,50 @@ shall be used. The config file location can be overridden by using `-c` flag.
 Sample configuration file:
 
 ```toml
-# Directory where package artifacts can be found.
-package-artifacts-dir-path = "dist"
+version = 1
 
 # Cache directory location.
 cached-artifacts-dir-path = "~/.git-pypi/cache/artifacts"
 
-# The sdist package build command.
-build-command = ["make", "build"]
-
-# Extra trees to check out for building (besides the requested package).
-# extra_checkout_paths = [".makefiles"]
-
-# Fallback index URL used if a package cannot be found. Leave empty or null to
-# disable the additional lookup.
+# Fallback index URL used if a package cannot be found in any of the configured
+repositories. Omit, leave empty, or null to disable.
 fallback-index-url = "https://pypi.python.org/simple"
-
-# A directory containing vendored packages, relative to the repository root.
-# Set to null to disable looking up packages in the local dir.
-local-packages-dir-path = "vendor"
 
 [server]
 host = "127.0.0.1"
 port = 60100
 threads = 4
 timeout = 300
+
+[repositories.git-local]
+type = "git"
+
+# Directory where the Git repository can be found.
+dir-path = "~/.git-pypi/repositories/one"
+
+# Directory where package artifacts can be found.
+package-artifacts-dir-path = "dist"
+
+# The sdist package build command.
+build-command = ["make", "build"]
+
+[repositories.git-remote]
+type = "git"
+
+# The address of Git remote:
+remote-uri = "git@github.com:pierec/two.git"
+
+# Directory where the Git repository will be cloned. Will be reused if the
+# repository is already there and the `origin` remote matches `remote-uri`.
+dir-path = "~/.git-pypi/repositories/two"
+
+# ...other supported options are identical to the entry above.
+
+[repositories.vendored]
+type = "package-dir"
+
+# A flat directory containing Python packages (dist and wheels).
+dir-path = "~/.git-pypi/repositories/vendored"
 ```
 
 ## Example Repository Layout
