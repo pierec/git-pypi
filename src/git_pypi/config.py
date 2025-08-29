@@ -33,7 +33,6 @@ class GitRepositoryConfig:
 
     package_artifacts_dir_path: Path = Path("dist")
     build_command: tuple[str, ...] = ("make", "build")
-    extra_checkout_paths: tuple[Path, ...] = ()
 
     def __post_init__(self):
         self.dir_path = self.dir_path.expanduser()
@@ -130,7 +129,6 @@ timeout = 300
 # type = "git"
 # dir-path = "~/.git-pypi/repositories/foo"
 # build-command = ["make", "build"]
-# extra-checkout-paths = [".makefiles", ".bin", ".configs"]
 
 # Example of a remote git repository. This repository will be cloned on server
 # start if not present in `dir-path`.
@@ -139,7 +137,6 @@ timeout = 300
 # remote-uri = "git@github.com:pierec/bar.git"
 # dir-path = "~/.git-pypi/repositories/bar"
 # build-command = ["make", "build"]
-# extra-checkout-paths = [".makefiles", ".bin", ".configs"]
 
 # Example of a repository that's a flat directory containing Python packages:
 # [repositories.vendored]

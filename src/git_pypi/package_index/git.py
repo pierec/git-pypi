@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 
 from git_pypi.builder import PackageBuilder
-from git_pypi.exc import PackageNotFoundError
+from git_pypi.exc import GitError, PackageNotFoundError
 from git_pypi.git import GitRepository
 
 from .base import FileName, PackageIndex, ProjectName
@@ -46,6 +46,6 @@ class GitPackageIndex(PackageIndex):
 
     def refresh(self) -> None:
         try:
-            self._git_repo.fetch_tags()
-        except Exception as e:
+            self._git_repo.fetch()
+        except GitError as e:
             logger.warning("Failed to refresh %r: %r", self._git_repo, e)

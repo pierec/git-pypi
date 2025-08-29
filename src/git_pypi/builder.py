@@ -1,6 +1,5 @@
 import logging
 import shutil
-import subprocess
 import typing as t
 from contextlib import contextmanager
 from pathlib import Path
@@ -8,9 +7,10 @@ from tempfile import TemporaryDirectory
 from threading import RLock
 from weakref import WeakValueDictionary
 
-from .exc import BuilderError
-from .git import GitRepository
-from .types import GitPackageInfo
+from git_pypi.cmd import Cmd
+from git_pypi.exc import BuilderError, CmdError
+from git_pypi.git import GitRepository
+from git_pypi.types import GitPackageInfo
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +32,9 @@ class PackageBuilder:
         package_cache: PackageCache,
         build_command: t.Sequence[str],
         package_artifacts_dir_path: Path | str,
-        extra_checkout_paths: t.Sequence[Path | str] | None = None,
     ) -> None:
-        self._build_command = list(build_command)
+        self._build_command = Cmd(*build_command)
         self._package_artifacts_dir_path = Path(package_artifacts_dir_path)
-        self._extra_checkout_paths = [Path(p) for p in (extra_checkout_paths or [])]
 
         self._git_repo = git_repo
         self._cache = package_cache
@@ -51,8 +49,10 @@ class PackageBuilder:
                 logger.info("Cache hit, skipping build... package=%r", package)
                 return file_path
 
-            with TemporaryDirectory() as temp_dir:
-                self._git_repo.checkout(package, temp_dir, self._extra_checkout_paths)
+            with (
+                TemporaryDirectory() as temp_dir,
+                self._git_repo.checkout(package, temp_dir),
+            ):
                 file_path = self._build(package, Path(temp_dir) / package.path)
 
         return file_path
@@ -66,22 +66,13 @@ class PackageBuilder:
 
         package_dir_path = Path(package_dir_path)
 
-        cp = subprocess.run(  # noqa: S603
-            self._build_command,
-            cwd=package_dir_path,
-            capture_output=True,
-            check=False,
-        )
-
-        if cp.returncode == 0:
-            logger.info("Building... OK! package=%r", package)
-        else:
+        try:
+            self._build_command.run(cwd=package_dir_path)
+        except CmdError as e:
             logger.error("Building... Failed! package=%r", package)
-            for line in cp.stdout.splitlines():
-                logger.error("OUT> %s", line.decode())
-            for line in cp.stderr.splitlines():
-                logger.error("ERR> %s", line.decode())
-            raise BuilderError(f"Failed to build {package!r}", cp)
+            raise BuilderError(f"Failed to build {package!r}") from e
+        else:
+            logger.info("Building... OK! package=%r", package)
 
         artifact_file_path = (
             package_dir_path / self._package_artifacts_dir_path / package.sdist_file_name

@@ -1,5 +1,6 @@
-INFO     git_pypi.git:git.py:117 Checking out package=GitPackageInfo(name='git-pypi-faulty', version='9.1.0', path=PosixPath('git-pypi-faulty'), tag_ref='refs/tags/git-pypi-faulty/v9.1.0', tag_sha1='a04ffff6d5b659330be5ecca24907860121e5245') to dst_dir=[...]
-INFO     git_pypi.builder:builder.py:65 Building... cmd=['make', 'build'], package=GitPackageInfo(name='git-pypi-faulty', version='9.1.0', path=PosixPath('git-pypi-faulty'), tag_ref='refs/tags/git-pypi-faulty/v9.1.0', tag_sha1='a04ffff6d5b659330be5ecca24907860121e5245')
-ERROR    git_pypi.builder:builder.py:79 Building... Failed! package=GitPackageInfo(name='git-pypi-faulty', version='9.1.0', path=PosixPath('git-pypi-faulty'), tag_ref='refs/tags/git-pypi-faulty/v9.1.0', tag_sha1='a04ffff6d5b659330be5ecca24907860121e5245')
-ERROR    git_pypi.builder:builder.py:81 OUT> ooops!
-ERROR    git_pypi.builder:builder.py:83 ERR> make: *** [build] Error 1
+INFO     git_pypi.git:git.py:198 Checking out package=GitPackageInfo(name='git-pypi-faulty', version='9.1.0', path=PosixPath('git-pypi-faulty'), tag_ref='refs/tags/git-pypi-faulty/v9.1.0', tag_sha1='a04ffff6d5b659330be5ecca24907860121e5245') to dst_dir=[...]
+INFO     git_pypi.builder:builder.py:65 Building... cmd=Cmd('make', 'build'), package=GitPackageInfo(name='git-pypi-faulty', version='9.1.0', path=PosixPath('git-pypi-faulty'), tag_ref='refs/tags/git-pypi-faulty/v9.1.0', tag_sha1='a04ffff6d5b659330be5ecca24907860121e5245')
+ERROR    git_pypi.cmd:cmd.py:42 Error calling ('make', 'build'), code=2
+ERROR    git_pypi.cmd:cmd.py:44  OUT> ooops!
+ERROR    git_pypi.cmd:cmd.py:47  ERR> make: *** [build] Error 1
+ERROR    git_pypi.builder:builder.py:72 Building... Failed! package=GitPackageInfo(name='git-pypi-faulty', version='9.1.0', path=PosixPath('git-pypi-faulty'), tag_ref='refs/tags/git-pypi-faulty/v9.1.0', tag_sha1='a04ffff6d5b659330be5ecca24907860121e5245')

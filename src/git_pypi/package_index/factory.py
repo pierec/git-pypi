@@ -47,7 +47,7 @@ def _(
     if config.remote_uri:
         git_repo = GitRepository.from_remote(
             dir_path=config.dir_path,
-            remote=config.remote_uri,
+            remote_uri=config.remote_uri,
         )
     else:
         git_repo = GitRepository.from_local_dir(
@@ -59,7 +59,6 @@ def _(
         package_cache=package_cache,
         build_command=config.build_command,
         package_artifacts_dir_path=config.package_artifacts_dir_path,
-        extra_checkout_paths=config.extra_checkout_paths,
     )
 
     return GitPackageIndex(
