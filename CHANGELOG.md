@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for packages.
 
 ### Fixed
-* Git repositories with submodules are now correctly handled. Previously and
+* Git repositories with submodules are now correctly handled. Previously, an
   error would be raised during checkout. Internally, all git operations are now
   made using `subprocess` calls to `git` command, with checkout being handled
   via a `git worktree` command.
