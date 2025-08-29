@@ -130,7 +130,7 @@ version = 1
 cached-artifacts-dir-path = "~/.git-pypi/cache/artifacts"
 
 # Fallback index URL used if a package cannot be found in any of the configured
-repositories. Omit, leave empty, or null to disable.
+# repositories. Omit, leave empty, or null to disable.
 fallback-index-url = "https://pypi.python.org/simple"
 
 [server]
