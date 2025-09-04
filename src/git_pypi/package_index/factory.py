@@ -64,6 +64,8 @@ def _(
     return GitPackageIndex(
         builder=builder,
         git_repo=git_repo,
+        skip_fetch=config.skip_refresh,
+        fetch_timeout=config.refresh_timeout,
     )
 
 

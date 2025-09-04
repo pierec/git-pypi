@@ -30,12 +30,17 @@ class GitRepositoryConfig:
 
     dir_path: Path
     remote_uri: str | None = None
+    skip_refresh: bool = False
+    refresh_timeout: float | None = None
 
     package_artifacts_dir_path: Path = Path("dist")
     build_command: tuple[str, ...] = ("make", "build")
 
     def __post_init__(self):
         self.dir_path = self.dir_path.expanduser()
+
+        if self.refresh_timeout is not None and self.refresh_timeout <= 0:
+            self.refresh_timeout = None
 
         if not self.build_command:
             raise ConfigError("`build-command` cannot be empty")
