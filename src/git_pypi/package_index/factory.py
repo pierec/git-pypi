@@ -58,6 +58,7 @@ def _(
         git_repo=git_repo,
         package_cache=package_cache,
         build_command=config.build_command,
+        build_timeout=config.build_timeout,
         package_artifacts_dir_path=config.package_artifacts_dir_path,
     )
 
