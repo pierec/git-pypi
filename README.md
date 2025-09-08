@@ -151,6 +151,15 @@ package-artifacts-dir-path = "dist"
 # The sdist package build command.
 build-command = ["make", "build"]
 
+# Timeout for the build command.
+build-timeout = 15 
+
+# If true, `git fetch` step will be skipped.
+skip-refresh = true
+
+# Timeout for the `git fetch` command.
+refresh-timeout = 5
+
 [repositories.git-remote]
 type = "git"
 

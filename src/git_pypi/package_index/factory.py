@@ -58,12 +58,15 @@ def _(
         git_repo=git_repo,
         package_cache=package_cache,
         build_command=config.build_command,
+        build_timeout=config.build_timeout,
         package_artifacts_dir_path=config.package_artifacts_dir_path,
     )
 
     return GitPackageIndex(
         builder=builder,
         git_repo=git_repo,
+        skip_fetch=config.skip_refresh,
+        fetch_timeout=config.refresh_timeout,
     )
 
 

@@ -15,9 +15,13 @@ class GitPackageIndex(PackageIndex):
         self,
         builder: PackageBuilder,
         git_repo: GitRepository,
+        skip_fetch: bool,
+        fetch_timeout: float | None = None,
     ) -> None:
         self._builder = builder
         self._git_repo = git_repo
+        self._skip_fetch = skip_fetch
+        self._fetch_timeout = fetch_timeout
 
     def list_projects(self) -> list[ProjectName]:
         self.refresh()
@@ -45,7 +49,10 @@ class GitPackageIndex(PackageIndex):
         return package_file_path
 
     def refresh(self) -> None:
+        if self._skip_fetch:
+            return
+
         try:
-            self._git_repo.fetch()
+            self._git_repo.fetch(timeout=self._fetch_timeout)
         except GitError as e:
             logger.warning("Failed to refresh %r: %r", self._git_repo, e)

@@ -30,15 +30,24 @@ class GitRepositoryConfig:
 
     dir_path: Path
     remote_uri: str | None = None
+    skip_refresh: bool = False
+    refresh_timeout: float | None = None
 
     package_artifacts_dir_path: Path = Path("dist")
     build_command: tuple[str, ...] = ("make", "build")
+    build_timeout: float | None = None
 
     def __post_init__(self):
         self.dir_path = self.dir_path.expanduser()
 
+        if self.refresh_timeout is not None and self.refresh_timeout <= 0:
+            self.refresh_timeout = None
+
         if not self.build_command:
             raise ConfigError("`build-command` cannot be empty")
+
+        if self.build_timeout is not None and self.build_timeout <= 0:
+            self.build_timeout = None
 
 
 @dataclass(kw_only=True)
@@ -129,6 +138,7 @@ timeout = 300
 # type = "git"
 # dir-path = "~/.git-pypi/repositories/foo"
 # build-command = ["make", "build"]
+# build-timeout = null
 
 # Example of a remote git repository. This repository will be cloned on server
 # start if not present in `dir-path`.
@@ -137,6 +147,8 @@ timeout = 300
 # remote-uri = "git@github.com:pierec/bar.git"
 # dir-path = "~/.git-pypi/repositories/bar"
 # build-command = ["make", "build"]
+# skip-refresh = false
+# refresh-timeout = 15
 
 # Example of a repository that's a flat directory containing Python packages:
 # [repositories.vendored]

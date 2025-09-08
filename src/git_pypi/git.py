@@ -38,27 +38,40 @@ def default_tag_parser(tag: TagReference) -> GitPackageInfo | None:
     )
 
 
-class GitRepo:
-    def __init__(self, git_dir_path: Path | str) -> None:
-        self.git_dir_path = Path(git_dir_path)
+class GitCmd:
+    def __init__(self, dir_path: Path | str) -> None:
+        self.dir_path = Path(dir_path)
         self._git_cmd = Cmd("git")
 
-    def clone(self, remote_uri: str) -> None:
+    def clone_bare(self, remote_uri: str) -> None:
         try:
-            self._git_cmd.run("clone", "--bare", remote_uri, f"{self.git_dir_path}")
+            self._git_cmd.run(
+                "clone",
+                "--bare",
+                remote_uri,
+                str(self.dir_path),
+            )
         except CmdError as e:
             raise GitError(str(e)) from e
 
-    def fetch(self) -> None:
+    def fetch(self, timeout: float | None = None) -> None:
         try:
-            self._git_cmd.run("--git-dir", f"{self.git_dir_path}", "fetch", "--tags")
+            self._git_cmd.run(
+                *self._path_args(),
+                "fetch",
+                "--tags",
+                timeout=timeout,
+            )
         except CmdError as e:
             raise GitError(str(e)) from e
 
-    def remote_uri(self, name: str = "origin") -> str | None:
+    def get_remote_uri(self, name: str = "origin") -> str | None:
         try:
             cp = self._git_cmd.run(
-                "--git-dir", f"{self.git_dir_path}", "remote", "get-url", name
+                *self._path_args(),
+                "remote",
+                "get-url",
+                name,
             )
         except CmdError as e:
             raise GitError(str(e)) from e
@@ -69,8 +82,7 @@ class GitRepo:
     def list_tags(self) -> list[TagReference]:
         try:
             cp = self._git_cmd.run(
-                "--git-dir",
-                f"{self.git_dir_path}",
+                *self._path_args(),
                 "show-ref",
                 "--tag",
                 expected_returncode={0, 1},
@@ -88,20 +100,20 @@ class GitRepo:
     def worktree_add(self, ref: str, path: Path) -> None:
         try:
             self._git_cmd.run(
-                "--git-dir",
-                f"{self.git_dir_path}",
+                *self._path_args(),
                 "worktree",
                 "add",
                 "-f",
-                f"{path}",
+                str(path),
                 ref,
             )
             self._git_cmd.run(
+                "-C",
+                str(path),
                 "submodule",
                 "update",
                 "--init",
                 "--recursive",
-                cwd=path,
             )
         except CmdError as e:
             raise GitError(str(e)) from e
@@ -109,26 +121,28 @@ class GitRepo:
     def worktree_rm(self, path: Path) -> None:
         try:
             self._git_cmd.run(
-                "--git-dir",
-                f"{self.git_dir_path}",
+                *self._path_args(),
                 "worktree",
                 "remove",
                 "-f",
-                f"{path}",
+                str(path),
             )
         except CmdError as e:
             raise GitError(str(e)) from e
+
+    def _path_args(self) -> tuple[str, ...]:
+        return ("-C", str(self.dir_path))
 
 
 class GitRepository:
     def __init__(
         self,
-        repo: GitRepo,
+        dir_path: Path | str,
         parse_tag: TagParser = default_tag_parser,
         fetch_fresh_period: float = 60,
     ) -> None:
         self._parse_tag = parse_tag
-        self._repo = repo
+        self._cmd = GitCmd(dir_path)
 
         self._fetch_fresh_period = fetch_fresh_period
         self._last_fetch_ts: float = 0
@@ -136,8 +150,7 @@ class GitRepository:
 
     @classmethod
     def from_local_dir(cls, dir_path: Path | str) -> tt.Self:
-        repo = GitRepo(Path(dir_path) / ".git")
-        return cls(repo)
+        return cls(dir_path)
 
     @classmethod
     def from_remote(cls, dir_path: Path | str, remote_uri: str) -> tt.Self:
@@ -145,9 +158,9 @@ class GitRepository:
 
         if dir_path.exists():
             try:
-                repo = GitRepo(dir_path)
-                if repo.remote_uri() == remote_uri:
-                    return cls(repo)
+                cmd = GitCmd(dir_path)
+                if cmd.get_remote_uri() == remote_uri:
+                    return cls(dir_path)
             except GitError as e:
                 logger.warning(
                     "Error when checking for existing repo at '%s': %r",
@@ -159,13 +172,17 @@ class GitRepository:
             old_dir_path = dir_path
             dir_path = cls._get_suffixed_path(dir_path)
             logger.warning(
-                f"Changed git clone path: '{old_dir_path}' -> '{dir_path}'",
+                "Path exists with a different remote URI. Changed git clone path: '%s' -> '%s'",
+                old_dir_path,
+                dir_path,
             )
 
+        logger.info("Cloning '%s' -> '%s'", remote_uri, dir_path)
         dir_path.mkdir(parents=True, exist_ok=True)
-        repo = GitRepo(dir_path)
-        repo.clone(remote_uri)
-        return cls(repo)
+        cmd = GitCmd(dir_path)
+        cmd.clone_bare(remote_uri)
+
+        return cls(dir_path)
 
     @staticmethod
     def _get_suffixed_path(path: Path) -> Path:
@@ -174,20 +191,22 @@ class GitRepository:
             if not suffixed_path.exists():
                 return suffixed_path
 
-        raise GitPackageIndexError(f"Failed to find and alternative path for '{path}.")
+        raise GitPackageIndexError(f"Failed to find and alternative path for '{path}'.")
 
     def list_packages(self) -> t.Iterator[GitPackageInfo]:
-        tags = self._repo.list_tags()
+        tags = self._cmd.list_tags()
 
         for tag in tags:
             if package_info := self._parse_tag(tag):
                 yield package_info
 
-    def fetch(self) -> None:
+    def fetch(self, timeout: float | None = None) -> None:
         with self._fetch_lock:
             if time.monotonic() - self._last_fetch_ts > self._fetch_fresh_period:
-                self._repo.fetch()
-                self._last_fetch_ts = time.monotonic()
+                try:
+                    self._cmd.fetch(timeout=timeout)
+                finally:
+                    self._last_fetch_ts = time.monotonic()
 
     @contextlib.contextmanager
     def checkout(
@@ -198,8 +217,8 @@ class GitRepository:
         logger.info("Checking out package=%r to dst_dir=%r", package, dst_dir)
 
         dst_dir = Path(dst_dir)
-        self._repo.worktree_add(ref=package.tag_sha1, path=dst_dir)
+        self._cmd.worktree_add(ref=package.tag_sha1, path=dst_dir)
 
         yield
 
-        self._repo.worktree_rm(path=dst_dir)
+        self._cmd.worktree_rm(path=dst_dir)

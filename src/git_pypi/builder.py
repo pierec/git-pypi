@@ -32,8 +32,10 @@ class PackageBuilder:
         package_cache: PackageCache,
         build_command: t.Sequence[str],
         package_artifacts_dir_path: Path | str,
+        build_timeout: float | None = None,
     ) -> None:
         self._build_command = Cmd(*build_command)
+        self._build_timeout = build_timeout
         self._package_artifacts_dir_path = Path(package_artifacts_dir_path)
 
         self._git_repo = git_repo
@@ -67,7 +69,10 @@ class PackageBuilder:
         package_dir_path = Path(package_dir_path)
 
         try:
-            self._build_command.run(cwd=package_dir_path)
+            self._build_command.run(
+                cwd=package_dir_path,
+                timeout=self._build_timeout,
+            )
         except CmdError as e:
             logger.error("Building... Failed! package=%r", package)
             raise BuilderError(f"Failed to build {package!r}") from e

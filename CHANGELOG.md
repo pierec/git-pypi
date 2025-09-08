@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v1.1.0
+
+### Changed
+* Git repositories now support the following new options:
+    * `refresh-skip`: set to `true` to skip fetching tags prior to checking for
+      packages.
+    * `refresh-timeout`: timeout to complete the `refresh` operation.
+    * `build-timeout`: timeout to complete the package build command.
+* Package lookup in a multiple-repository configuration is now parallelized.
+* A log message is now emitted when cloning a new repository.
+
 ## v1.0.0
 
 ### Changed

@@ -22,6 +22,7 @@ class Cmd:
         *args: str,
         expected_returncode: set[int] | None = None,
         cwd: pathlib.Path | None = None,
+        timeout: float | None = None,
     ) -> subprocess.CompletedProcess:
         expected_returncode = expected_returncode or {0}
         args = (*self._args, *args)
@@ -36,6 +37,7 @@ class Cmd:
             capture_output=True,
             check=False,
             cwd=cwd,
+            timeout=timeout,
         )
 
         if cp.returncode not in expected_returncode:
