@@ -177,6 +177,7 @@ class GitRepository:
                 dir_path,
             )
 
+        logger.info("Cloning '%s' -> '%s'", remote_uri, dir_path)
         dir_path.mkdir(parents=True, exist_ok=True)
         cmd = GitCmd(dir_path)
         cmd.clone_bare(remote_uri)
